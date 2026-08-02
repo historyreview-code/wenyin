@@ -19,6 +19,25 @@ def esc(s):
     return html.escape(s, quote=False)
 
 
+RUBY = {
+    "玦": "jué", "琬": "wǎn", "圉": "yǔ", "驩": "huān", "偪": "bī",
+    "姞": "jí", "隗": "wěi", "憖": "yìn", "罃": "yīng", "匜": "yí",
+    "盥": "guàn", "蒹": "jiān", "葭": "jiā", "缒": "zhuì", "鹢": "yì",
+    "殽": "xiáo", "崤": "xiáo", "绛": "jiàng", "汾": "fén", "濮": "pú",
+    "殡": "bìn", "柩": "jiù", "绖": "dié", "衰": "cuī", "胄": "zhòu",
+    "秣": "mò", "犒": "kào", "缟": "gǎo", "缶": "fǒu", "戚": "qī",
+    "骖": "cān", "堞": "dié", "雉": "zhì", "稽": "qǐ", "梓": "zǐ",
+    "嬴": "yíng",
+}
+
+
+def rubyize(s):
+    for ch, py in RUBY.items():
+        if ch in s:
+            s = s.replace(ch, "<ruby>%s<rt>%s</rt></ruby>" % (ch, py))
+    return s
+
+
 def parse_md(path):
     """解析分卷 md：标题、体例说明（引用块）、章节。"""
     with open(path, encoding="utf-8") as f:
@@ -89,6 +108,7 @@ STYLE = """
   .ch-head h2{font-size:1.9rem;letter-spacing:.25em;text-indent:.25em;}
   .ch-deco{width:56px;height:2px;background:var(--accent);margin:.9rem auto 0;}
   section.chapter p{text-indent:2em;margin-bottom:.9rem;}
+  ruby{rt{font-size:.5em;color:var(--ink2);letter-spacing:0;}}
   .note{border-left:3px solid var(--accent2);background:rgba(122,92,58,.05);color:var(--ink2);padding:.6rem 1.2rem;margin:1.2rem 2rem;font-size:.92rem;}
   .pager{display:flex;justify-content:space-between;gap:1rem;margin-top:3rem;padding-top:1.4rem;border-top:1px dashed var(--line);font-size:.95rem;}
   .pager a{color:var(--accent);text-decoration:none;letter-spacing:.08em;}
@@ -119,10 +139,10 @@ def build_page(vol, name, path, out):
         anchor = "ch%d" % len(toc_links)
         toc_links.append('<a href="#%s">%s</a>' % (anchor, esc(head)))
         parts = ['<section class="chapter" id="%s">' % anchor,
-                 '<div class="ch-head"><div class="ch-no">%s</div><h2>%s</h2><div class="ch-deco"></div></div>' % (esc(vol), esc(head))]
+                 '<div class="ch-head"><div class="ch-no">%s</div><h2>%s</h2><div class="ch-deco"></div></div>' % (esc(vol), rubyize(esc(head)))]
         for p in paras:
             if p:
-                parts.append("<p>%s</p>" % esc(p))
+                parts.append("<p>%s</p>" % rubyize(esc(p)))
         parts.append("</section>")
         sections.append("\n".join(parts))
     prev_html = '<a href="%s">← %s</a>' % (PREV[out], "上一卷") if out in PREV else "<span></span>"
